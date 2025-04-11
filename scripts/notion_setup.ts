@@ -9,9 +9,25 @@ const notion = new Client({
   auth: process.env.NOTION_API_KEY,
 });
 
+function formatPageId(pageId: string): string {
+  // 移除任何非十六進制字符
+  const cleanId = pageId.replace(/[^0-9a-f]/gi, '');
+  // 添加連字符
+  return [
+    cleanId.slice(0, 8),
+    cleanId.slice(8, 12),
+    cleanId.slice(12, 16),
+    cleanId.slice(16, 20),
+    cleanId.slice(20)
+  ].join('-');
+}
+
 async function createDatabase(parentPageId: string, title: string, properties: any) {
+  const formattedPageId = formatPageId(parentPageId);
+  console.log(`正在創建數據庫 "${title}" 在頁面 ${formattedPageId} 中...`);
+  
   const response = await notion.databases.create({
-    parent: { page_id: parentPageId },
+    parent: { page_id: formattedPageId },
     title: [{ type: 'text', text: { content: title } }],
     properties,
   });
@@ -24,6 +40,9 @@ async function setup() {
     if (!pageId) {
       throw new Error('請在 .env 文件中設置 NOTION_PAGE_ID');
     }
+
+    console.log('開始設置 Notion 數據庫...');
+    console.log(`使用頁面 ID: ${pageId}`);
 
     // 創建主題數據庫
     const mainTopicsDbId = await createDatabase(pageId, '主要主題', {
@@ -105,7 +124,7 @@ async function setup() {
 
     fs.writeFileSync(envPath, envContent);
 
-    console.log('Notion 數據庫設置完成！');
+    console.log('\nNotion 數據庫設置完成！');
     console.log('數據庫 ID 已更新到 .env 文件中');
     console.log('\n您可以在 Notion 中查看以下數據庫：');
     console.log(`1. 主要主題: ${mainTopicsDbId}`);
@@ -113,8 +132,11 @@ async function setup() {
     console.log(`3. 每日輸出: ${dailyOutputDbId}`);
     console.log(`4. 語義資源: ${semanticResourcesDbId}`);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('設置過程中發生錯誤：', error);
+    if (error.body) {
+      console.error('錯誤詳情：', error.body);
+    }
   }
 }
 
