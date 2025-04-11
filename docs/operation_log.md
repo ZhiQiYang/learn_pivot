@@ -1,17 +1,23 @@
 # 操作日誌
 
-## 2024-03-21 15:30:00
-- 修改文件：
-  - M README.md
-  - A docs/guide.md
-- 描述：初始化項目文檔
+### 2025/4/12 上午2:07:02
 
-## 2024-03-21 14:00:00
-- 修改文件：
-  - M src/index.ts
-- 描述：修復用戶認證問題
+#### 修改的文件
+- M README.md
+- M package.json
+- M tsconfig.json
+- M .env.example
+- M docs/operation_log.md
+- M scripts/log_operation.ts
 
-## 2024-04-12
+#### 操作描述
+- 更新至 GitHub 並初始化項目
+
+### 2025/4/12 上午2:06:52
+
+#### 操作描述
+- 更新至 GitHub
+- README.md,package.json,tsconfig.json,.env.example,docs/operation_log.md,scripts/log_operation.ts
 
 ### 14:30 操作摘要
 
@@ -30,6 +36,8 @@
 - 更新了 README.md，添加了使用說明
 
 ### 初始化項目
+
+#### 操作描述
 - 創建了 Notion API 整合方案實現指南 (`docs/notion_integration_guide.md`)
 - 創建了 Notion 設置腳本 (`scripts/notion_setup.ts`)
 - 創建了 package.json 文件，配置了依賴和腳本
@@ -37,21 +45,6 @@
 - 創建了 .env.example 文件，提供了環境變量模板
 
 ### 項目結構
-```
-learn_pivot/
-├── docs/
-│   ├── notion_integration_guide.md  # Notion API 整合方案實現指南
-│   └── operation_log.md             # 操作日誌
-├── scripts/
-│   ├── notion_setup.ts              # Notion 設置腳本
-│   └── log_operation.ts             # 操作日誌記錄腳本
-├── .env.example                     # 環境變量模板
-├── package.json                     # 項目依賴和腳本
-└── tsconfig.json                    # TypeScript 配置
-```
 
 ### 下一步操作
-1. 安裝依賴：`npm install`
-2. 創建 .env 文件並填入 Notion API 密鑰和頁面 ID
-3. 運行設置腳本：`npm run setup`
-4. 在 Notion 中訪問創建的數據庫 
+

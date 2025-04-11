@@ -103,18 +103,18 @@ function logOperation(files: { status: 'M' | 'A' | 'D'; path: string }[], descri
 if (require.main === module) {
   const args = process.argv.slice(2);
   if (args.length < 2) {
-    console.log('用法: npm run log -- <文件狀態列表> <描述>');
-    console.log('示例: npm run log -- "M README.md,A docs/guide.md" "更新文檔"');
+    console.log('用法: npm run log -- <描述> <文件列表>');
+    console.log('示例: npm run log -- "更新文檔" "README.md,docs/guide.md"');
     process.exit(1);
   }
-  
-  const [filesArg, ...descArgs] = args;
-  const files = filesArg.split(',').map(f => {
-    const [status, path] = f.trim().split(' ');
-    return { status: status as 'M' | 'A' | 'D', path };
-  });
-  
-  logOperation(files, descArgs);
+
+  const [description, filesArg] = args;
+  const files = filesArg.split(',').map(file => ({
+    status: 'M' as const,
+    path: file.trim()
+  }));
+
+  logOperation(files, [description]);
 }
 
 export { logOperation }; 
