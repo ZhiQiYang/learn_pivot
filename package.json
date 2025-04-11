@@ -1,13 +1,16 @@
 {
   "name": "learn-pivot-notion",
   "version": "1.0.0",
-  "description": "Notion integration for Learn Pivot system",
-  "main": "scripts/notion_setup.ts",
+  "description": "Notion API 整合方案",
+  "main": "index.js",
   "scripts": {
-    "setup": "ts-node scripts/notion_setup.ts",
-    "start": "ts-node src/index.ts",
-    "log": "ts-node scripts/log_operation.ts"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "log": "ts-node scripts/log_operation.ts",
+    "setup:notion": "ts-node scripts/notion_setup.ts"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "@notionhq/client": "^2.2.14",
     "dotenv": "^16.4.5"

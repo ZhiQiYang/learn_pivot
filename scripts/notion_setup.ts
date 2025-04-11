@@ -1,5 +1,7 @@
 import { Client } from '@notionhq/client';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
+import * as fs from 'fs';
+import * as path from 'path';
 
 dotenv.config();
 
@@ -7,152 +9,113 @@ const notion = new Client({
   auth: process.env.NOTION_API_KEY,
 });
 
-async function createDatabase(title: string, properties: any) {
-  return await notion.databases.create({
-    parent: {
-      type: 'page_id',
-      page_id: process.env.NOTION_PAGE_ID,
-    },
-    title: [
-      {
-        type: 'text',
-        text: {
-          content: title,
-        },
-      },
-    ],
+async function createDatabase(parentPageId: string, title: string, properties: any) {
+  const response = await notion.databases.create({
+    parent: { page_id: parentPageId },
+    title: [{ type: 'text', text: { content: title } }],
     properties,
   });
+  return response.id;
 }
 
-async function setupDatabases() {
-  // 創建主攻主題數據庫
-  const mainTopicsDb = await createDatabase('主攻主題', {
-    Title: {
-      title: {},
-    },
-    Status: {
-      select: {
-        options: [
-          { name: '進行中', color: 'blue' },
-          { name: '已完成', color: 'green' },
-        ],
-      },
-    },
-    '開始日期': {
-      date: {},
-    },
-    '預計完成日期': {
-      date: {},
-    },
-    Progress: {
-      number: {
-        format: 'percent',
-      },
-    },
-  });
+async function setup() {
+  try {
+    const pageId = process.env.NOTION_PAGE_ID;
+    if (!pageId) {
+      throw new Error('請在 .env 文件中設置 NOTION_PAGE_ID');
+    }
 
-  // 創建槓桿模組數據庫
-  const leverageModulesDb = await createDatabase('槓桿模組', {
-    Title: {
-      title: {},
-    },
-    Type: {
-      select: {
-        options: [
-          { name: '認知心理', color: 'purple' },
-          { name: 'Python', color: 'blue' },
-          { name: '熱力學', color: 'red' },
-          { name: '神經激素', color: 'green' },
-          { name: 'AI Prompt', color: 'orange' },
-          { name: '博弈論', color: 'yellow' },
-        ],
-      },
-    },
-    Status: {
-      select: {
-        options: [
-          { name: '活躍', color: 'green' },
-          { name: '暫停', color: 'yellow' },
-          { name: '完成', color: 'blue' },
-        ],
-      },
-    },
-  });
+    // 創建主題數據庫
+    const mainTopicsDbId = await createDatabase(pageId, '主要主題', {
+      '標題': { title: {} },
+      '狀態': { select: { options: [
+        { name: '進行中', color: 'blue' },
+        { name: '已完成', color: 'green' },
+        { name: '待處理', color: 'gray' }
+      ]}},
+      '優先級': { select: { options: [
+        { name: '高', color: 'red' },
+        { name: '中', color: 'yellow' },
+        { name: '低', color: 'green' }
+      ]}},
+      '最後更新': { date: {} }
+    });
 
-  // 創建每日輸出數據庫
-  const dailyOutputDb = await createDatabase('每日輸出', {
-    Title: {
-      title: {},
-    },
-    Date: {
-      date: {},
-    },
-    Topic: {
-      relation: {
-        database_id: mainTopicsDb.id,
-        single_property: {},
-      },
-    },
-    '使用的槓桿模組': {
-      relation: {
-        database_id: leverageModulesDb.id,
-        single_property: {},
-      },
-    },
-    '比喻內容': {
-      rich_text: {},
-    },
-    '觸發聯想': {
-      rich_text: {},
-    },
-    '應用場景': {
-      rich_text: {},
-    },
-    '學習收穫': {
-      rich_text: {},
-    },
-    '改進點': {
-      rich_text: {},
-    },
-    '明日計劃': {
-      rich_text: {},
-    },
-  });
+    // 創建槓桿模塊數據庫
+    const leverageModulesDbId = await createDatabase(pageId, '槓桿模塊', {
+      '標題': { title: {} },
+      '類型': { select: { options: [
+        { name: '工具', color: 'blue' },
+        { name: '方法', color: 'green' },
+        { name: '資源', color: 'purple' }
+      ]}},
+      '狀態': { select: { options: [
+        { name: '可用', color: 'green' },
+        { name: '開發中', color: 'yellow' },
+        { name: '已棄用', color: 'red' }
+      ]}}
+    });
 
-  // 創建語意資源數據庫
-  const semanticResourcesDb = await createDatabase('語意資源', {
-    Title: {
-      title: {},
-    },
-    Type: {
-      select: {
-        options: [
-          { name: '比喻卡', color: 'purple' },
-          { name: 'Prompt模板', color: 'blue' },
-          { name: '問題集', color: 'green' },
-        ],
-      },
-    },
-    Content: {
-      rich_text: {},
-    },
-    Tags: {
-      multi_select: {
-        options: [
-          { name: '學習', color: 'blue' },
-          { name: '思考', color: 'green' },
-          { name: '創意', color: 'purple' },
-        ],
-      },
-    },
-  });
+    // 創建每日輸出數據庫
+    const dailyOutputDbId = await createDatabase(pageId, '每日輸出', {
+      '日期': { date: {} },
+      '內容': { rich_text: {} },
+      '類型': { select: { options: [
+        { name: '筆記', color: 'blue' },
+        { name: '想法', color: 'green' },
+        { name: '任務', color: 'red' }
+      ]}}
+    });
 
-  console.log('數據庫創建完成！');
-  console.log('主攻主題數據庫 ID:', mainTopicsDb.id);
-  console.log('槓桿模組數據庫 ID:', leverageModulesDb.id);
-  console.log('每日輸出數據庫 ID:', dailyOutputDb.id);
-  console.log('語意資源數據庫 ID:', semanticResourcesDb.id);
+    // 創建語義資源數據庫
+    const semanticResourcesDbId = await createDatabase(pageId, '語義資源', {
+      '標題': { title: {} },
+      '類型': { select: { options: [
+        { name: '文章', color: 'blue' },
+        { name: '視頻', color: 'green' },
+        { name: '音頻', color: 'purple' }
+      ]}},
+      '標籤': { multi_select: { options: [
+        { name: '學習', color: 'blue' },
+        { name: '工作', color: 'green' },
+        { name: '生活', color: 'yellow' }
+      ]}}
+    });
+
+    // 更新 .env 文件
+    const envPath = path.join(__dirname, '../.env');
+    let envContent = fs.readFileSync(envPath, 'utf-8');
+    
+    envContent = envContent.replace(
+      'NOTION_MAIN_TOPICS_DB=your_main_topics_database_id',
+      `NOTION_MAIN_TOPICS_DB=${mainTopicsDbId}`
+    );
+    envContent = envContent.replace(
+      'NOTION_LEVERAGE_MODULES_DB=your_leverage_modules_database_id',
+      `NOTION_LEVERAGE_MODULES_DB=${leverageModulesDbId}`
+    );
+    envContent = envContent.replace(
+      'NOTION_DAILY_OUTPUT_DB=your_daily_output_database_id',
+      `NOTION_DAILY_OUTPUT_DB=${dailyOutputDbId}`
+    );
+    envContent = envContent.replace(
+      'NOTION_SEMANTIC_RESOURCES_DB=your_semantic_resources_database_id',
+      `NOTION_SEMANTIC_RESOURCES_DB=${semanticResourcesDbId}`
+    );
+
+    fs.writeFileSync(envPath, envContent);
+
+    console.log('Notion 數據庫設置完成！');
+    console.log('數據庫 ID 已更新到 .env 文件中');
+    console.log('\n您可以在 Notion 中查看以下數據庫：');
+    console.log(`1. 主要主題: ${mainTopicsDbId}`);
+    console.log(`2. 槓桿模塊: ${leverageModulesDbId}`);
+    console.log(`3. 每日輸出: ${dailyOutputDbId}`);
+    console.log(`4. 語義資源: ${semanticResourcesDbId}`);
+
+  } catch (error) {
+    console.error('設置過程中發生錯誤：', error);
+  }
 }
 
-setupDatabases().catch(console.error); 
+setup(); 
