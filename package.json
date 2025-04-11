@@ -1,0 +1,20 @@
+{
+  "name": "learn-pivot-notion",
+  "version": "1.0.0",
+  "description": "Notion integration for Learn Pivot system",
+  "main": "scripts/notion_setup.ts",
+  "scripts": {
+    "setup": "ts-node scripts/notion_setup.ts",
+    "start": "ts-node src/index.ts",
+    "log": "ts-node scripts/log_operation.ts"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2.2.14",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+} 
